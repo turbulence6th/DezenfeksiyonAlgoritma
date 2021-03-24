@@ -5,10 +5,7 @@ import com.otanrikulu.hareket.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Uygulama {
 
@@ -93,15 +90,25 @@ public class Uygulama {
         }
 
         gecmisHaritalar.add(hashHesapla(harita));
-        StringBuilder cozum = coz(harita, karakterKonumu, hareketListesi, gecmisHaritalar, new StringBuilder());
-        if (cozum != null) {
-            return cozum.toString();
-        } else {
-            return "Çözüm bulunamadı";
+        YiginDurumu yiginDurumu = new YiginDurumu(harita, karakterKonumu, hareketListesi, gecmisHaritalar, new StringBuilder());
+
+        Deque<YiginDurumu> yigin = new ArrayDeque<>();
+        yigin.push(yiginDurumu);
+
+        NavigableMap<Integer, String> cozumler = new TreeMap<>();
+        while (!yigin.isEmpty()) {
+            YiginDurumu tepe = yigin.pop();
+            StringBuilder sonuc = coz(tepe.harita, tepe.karakterKonumu, tepe.hareketListesi, tepe.gecmisHaritalar, tepe.mevcut, yigin);
+
+            if (sonuc != null) {
+                cozumler.put(sonuc.length(), sonuc.toString());
+            }
         }
+
+        return cozumler.firstEntry().getValue();
     }
 
-    private static StringBuilder coz(byte[][] harita, Koordinat karakterKonumu, List<HareketEt> hareketListesi, Set<String> gecmisHaritalar, StringBuilder mevcut) {
+    private static StringBuilder coz(byte[][] harita, Koordinat karakterKonumu, List<HareketEt> hareketListesi, Set<String> gecmisHaritalar, StringBuilder mevcut, Deque<YiginDurumu> yigin) {
         int haritaDurum = haritaCozulduMu(harita);
 
         if (haritaDurum == 2) {
@@ -122,10 +129,8 @@ public class Uygulama {
 
             StringBuilder mevcutKopya = new StringBuilder(mevcut);
             mevcutKopya.append(hareketEt.yon());
-            StringBuilder sonuc = coz(haritaDegistir.getHarita(), haritaDegistir.getKarakterKonumu(), hareketListesi, gecmisHaritalar, mevcutKopya);
-            if (sonuc != null) {
-                return sonuc;
-            }
+
+            yigin.push(new YiginDurumu(haritaDegistir.getHarita(), haritaDegistir.getKarakterKonumu(), hareketListesi, gecmisHaritalar, mevcutKopya));
         }
 
         return null;
