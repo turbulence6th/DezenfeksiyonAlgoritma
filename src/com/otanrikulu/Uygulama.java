@@ -95,17 +95,16 @@ public class Uygulama {
         Deque<YiginDurumu> yigin = new ArrayDeque<>();
         yigin.push(yiginDurumu);
 
-        NavigableMap<Integer, String> cozumler = new TreeMap<>();
         while (!yigin.isEmpty()) {
-            YiginDurumu tepe = yigin.pop();
+            YiginDurumu tepe = yigin.poll();
             StringBuilder sonuc = coz(tepe.harita, tepe.karakterKonumu, tepe.hareketListesi, tepe.gecmisHaritalar, tepe.mevcut, yigin);
 
             if (sonuc != null) {
-                cozumler.put(sonuc.length(), sonuc.toString());
+                return String.format("Adım sayısı: %s\n Çözüm: %s", sonuc.length(), sonuc);
             }
         }
 
-        return cozumler.firstEntry().getValue();
+        return "Çözüm bulunamadı";
     }
 
     private static StringBuilder coz(byte[][] harita, Koordinat karakterKonumu, List<HareketEt> hareketListesi, Set<String> gecmisHaritalar, StringBuilder mevcut, Deque<YiginDurumu> yigin) {
@@ -130,7 +129,7 @@ public class Uygulama {
             StringBuilder mevcutKopya = new StringBuilder(mevcut);
             mevcutKopya.append(hareketEt.yon());
 
-            yigin.push(new YiginDurumu(haritaDegistir.getHarita(), haritaDegistir.getKarakterKonumu(), hareketListesi, gecmisHaritalar, mevcutKopya));
+            yigin.add(new YiginDurumu(haritaDegistir.getHarita(), haritaDegistir.getKarakterKonumu(), hareketListesi, gecmisHaritalar, mevcutKopya));
         }
 
         return null;
